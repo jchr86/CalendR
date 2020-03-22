@@ -18,28 +18,62 @@ Installation
 
 CalendR is hosted on [packagist](http://packagist.org), you can install it with composer.
 
-Create a composer.json file
-
-```json
-    {
-        "require": {
-            "yohang/calendr": "^1.1"
-        }
-    }
+Open a command console, enter your project directory and execute:
+```console
+$ composer require jchr86/calendr
 ```
 
-Install composer and run it
+Applications that use Symfony Flex
+----------------------------------
 
-```sh
-    wget http://getcomposer.org/composer.phar
-    php composer.phar install
-```
+### Enable the Bundle.
 
-(Optional) Autoload CalendR
+Enable the bundle by adding it to the list of registered bundles
+in the `config/bundles.php` file of your project:
 
 ```php
-    require 'vendor/autoload.php';
+// config/bundles.php
+
+return [
+    // ...
+    CalendR\Bridge\Symfony\Bundle\CalendRBundle::class => ['all' => true],
+];
 ```
+
+### Register an event provider.
+
+```php
+// src/Repository/EventRepository.php
+
+namespace App\Repository;
+
+use App\Entity\Event;
+use CalendR\Bridge\Doctrine\ORM\EventRepository;
+use CalendR\Event\Provider\ProviderInterface;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\Expr;
+
+class EventRepository extends ServiceEntityRepository implements ProviderInterface
+{
+    use EventRepository;
+
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Event::class);
+    }
+}
+```
+
+```yaml
+// config/services.yaml
+
+services:
+    App\Repository\EventRepository:
+        tags:
+            - { name: calendr.event_provider }
+```
+
 
 Contribute
 ----------
