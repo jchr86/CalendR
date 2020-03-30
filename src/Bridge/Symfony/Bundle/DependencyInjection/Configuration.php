@@ -11,7 +11,13 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $builder = new TreeBuilder('calendr');
-        $root = $builder->getRootNode();
+
+        // Keep compatibility with symfony/config < 4.2
+        if (method_exists($builder, 'getRootNode')) {
+            $root = $builder->getRootNode();
+        } else {
+            $root = $builder->root('calendr');
+        }
 
         $root
             ->children()
